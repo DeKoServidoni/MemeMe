@@ -54,8 +54,5 @@ class MemeDetailViewController: UIViewController, MemeEditorProtocol {
     
     func finishToEdit(meme: Meme) {
         self.meme = meme
-        
-        sharedContext.insertObject(meme)
-        CoreDataStackManager.sharedInstance().saveContext()
     }
 }

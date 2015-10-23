@@ -166,13 +166,17 @@ class MemeEditorViewController: UIViewController, FontViewProtocol {
     
     // create the meme object
     private func saveMeme(generated: UIImage) {
-        let meme = Meme(top: topTextField.text!, bottom: bottomTextField.text!, original: imageView.image!, altered: generated, context: temporaryContext)
         
         if(isEditing == true) {
-            delegate?.finishToEdit(meme)
+            memeToEdit?.textTop = topTextField.text!
+            memeToEdit?.textBottom = bottomTextField.text!
+            memeToEdit?.memeImage = UIImagePNGRepresentation(generated)
+            delegate?.finishToEdit(memeToEdit!)
         } else {
-            CoreDataStackManager.sharedInstance().saveContext()
+            _ = Meme(top: topTextField.text!, bottom: bottomTextField.text!, original: imageView.image!, altered: generated, context: temporaryContext)
         }
+        
+        CoreDataStackManager.sharedInstance().saveContext()
     }
     
     // generate the meme image
