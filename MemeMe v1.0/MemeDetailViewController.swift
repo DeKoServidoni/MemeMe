@@ -8,6 +8,7 @@
 
 import Foundation
 import UIKit
+import CoreData
 
 class MemeDetailViewController: UIViewController, MemeEditorProtocol {
     
@@ -16,12 +17,16 @@ class MemeDetailViewController: UIViewController, MemeEditorProtocol {
     
     @IBOutlet weak var memeDetailed: UIImageView!
     
+    lazy var sharedContext: NSManagedObjectContext = {
+        return CoreDataStackManager.sharedInstance().managedObjectContext
+    }()
+    
     // MARK: lifecycle functions
     
     override func viewWillAppear(animated: Bool) {
         super.viewWillAppear(animated)
         
-        memeDetailed.image = meme.memeImage
+        memeDetailed.image = UIImage(data: meme.memeImage)
     }
     
     override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject?) {
@@ -39,9 +44,8 @@ class MemeDetailViewController: UIViewController, MemeEditorProtocol {
     // MARK: Action functions
     
     @IBAction func deleteMeme(sender: UIButton) {
-        // save the meme in the shared data model
-        let appDelegate = UIApplication.sharedApplication().delegate as! AppDelegate
-        appDelegate.memes.removeAtIndex(index)
+        sharedContext.deleteObject(meme)
+        CoreDataStackManager.sharedInstance().saveContext()
         
         navigationController!.popViewControllerAnimated(true)
     }
@@ -50,5 +54,8 @@ class MemeDetailViewController: UIViewController, MemeEditorProtocol {
     
     func finishToEdit(meme: Meme) {
         self.meme = meme
+        
+        sharedContext.insertObject(meme)
+        CoreDataStackManager.sharedInstance().saveContext()
     }
 }

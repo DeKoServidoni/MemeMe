@@ -7,6 +7,7 @@
 //
 
 import UIKit
+import CoreData
 
 // protocol responsible to send the edited meme back
 // to the MemeDetailViewController
@@ -47,6 +48,12 @@ class MemeEditorViewController: UIViewController, FontViewProtocol {
         NSStrokeWidthAttributeName : -1.0
     ]
     
+    lazy var temporaryContext: NSManagedObjectContext = {
+        //let temporary = NSManagedObjectContext()
+        //temporary.persistentStoreCoordinator = CoreDataStackManager.sharedInstance().
+        return CoreDataStackManager.sharedInstance().managedObjectContext
+    }()
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         
@@ -68,7 +75,7 @@ class MemeEditorViewController: UIViewController, FontViewProtocol {
         
         // set the values of the meme that we want to edit
         if let temp = memeToEdit {
-            imageView.image = temp.originalImage
+            imageView.image = UIImage(data: temp.originalImage)
             topTextField.text = temp.textTop
             bottomTextField.text = temp.textBottom
             isEditing = true
@@ -159,19 +166,13 @@ class MemeEditorViewController: UIViewController, FontViewProtocol {
     
     // create the meme object
     private func saveMeme(generated: UIImage) {
-        let meme = Meme(textTop: topTextField.text, textBottom: bottomTextField.text, originalImage: imageView.image, memeImage: generated)
-        
-        // save the meme in the shared data model
-        let appDelegate = UIApplication.sharedApplication().delegate as! AppDelegate
+        let meme = Meme(top: topTextField.text!, bottom: bottomTextField.text!, original: imageView.image!, altered: generated, context: temporaryContext)
         
         if(isEditing == true) {
-            appDelegate.memes.removeAtIndex(memeIndex)
-            appDelegate.memes.insert(meme, atIndex: memeIndex)
             delegate?.finishToEdit(meme)
         } else {
-            appDelegate.memes.append(meme)
+            CoreDataStackManager.sharedInstance().saveContext()
         }
-
     }
     
     // generate the meme image
